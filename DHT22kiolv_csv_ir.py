@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-print("hőmérséklet kiolvasás")
 
 import Adafruit_DHT
 import sys
@@ -8,14 +7,17 @@ import datetime
 from gpiozero import LED
 import time
 
+#LED GPIO összerendelés
 lampa = LED(17)
+
+#szenzor
 sensor = Adafruit_DHT.DHT22
 pin = 4
 
+#hőmérséklet, páratartalom beolvasás
 homerseklet, paratartalom = Adafruit_DHT.read_retry(sensor, pin)
 
-# homerseklet = ("{0:0.1f}".format(homerseklet))
-
+#hibakezelés nincs jel szenzorról - LED 10x felvillan
 if homerseklet is None:
 	for i in range(10):
 		lampa.on()
@@ -23,12 +25,15 @@ if homerseklet is None:
 		lampa.off()
 		time.sleep(1)
 
+#szenzor kiolvasás dátuma és ideje
 ido = str(datetime.datetime.now())
 ido = ido[:-7]
-#print (ido)
 
+#a fájl ill. csv fájl elérési útvonala
 dir = "/home/pi/teszt/"
 f = open(dir+"database.csv" , 'at')
+
+#fájlírás hibakezeléssel - LED 3x felvillan - sikeres írás esetén 1x2 sec-ot világít
 try:
 	w = csv.writer(f, delimiter=';')
 	w.writerow(("RP03_01", ido, "{0:0.1f}".format(homerseklet) , "{0:0.1f}".format( paratartalom)))
@@ -45,5 +50,6 @@ except:
 
 finally:
 	f.close()
- 
+
+#szükség esetén a fájlírás adatainak kiíratása:
 #print ("RP03_01", ido, "{0:0.1f}".format(homerseklet) , "{0:0.1f}".format(paratartalom))
